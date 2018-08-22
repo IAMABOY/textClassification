@@ -1,9 +1,8 @@
 #-*- coding:utf8 -*-
-
-import random
+import csv
 import jieba
 import pandas as pd
-import csv
+import random
 from sklearn.feature_extraction.text import TfidfVectorizer, HashingVectorizer,CountVectorizer
 from sklearn.model_selection import train_test_split
 from sklearn.naive_bayes import MultinomialNB
@@ -16,34 +15,29 @@ def csvReader(dataPath,dataArray):
 	for row in dataReader:
 		dataArray.append(row[0])
 
-def getWordsAndMakeLabel(content_lines, sentences, label):
-	for line in content_lines:
-		try:
-			lineLower = line.lower()#全部转化为小写，排除大小写的干扰
-			words=jieba.lcut(lineLower)
-			words = [v for v in words if not str(v).isdigit()]#去数字
-			words = list(filter(lambda x:x.strip(), words))   #去左右空格
-			words = list(filter(lambda x:len(x)>1, words)) #长度为1的字符
-			words = list(filter(lambda x:x not in stopwords, words)) #去掉停用词
-			sentences.append((" ".join(words), label))# 打标签
-		except Exception:
-			print(line)
-			continue
+def getWordsAndMakeLabel(allLines, sentences, label):
+	for line in allLines:
+		lineLower = line.lower()#全部转化为小写，排除大小写的干扰
+		wordsOfALine=jieba.lcut(lineLower)
+		wordsOfALine = [word for word in wordsOfALine if not str(word).isdigit()]#去数字
+		wordsOfALine = list(filter(lambda word:word.strip(), wordsOfALine))   #去左右空格
+		wordsOfALine = list(filter(lambda word:word not in stopwords, wordsOfALine)) #去掉停用词
+		sentences.append((" ".join(wordsOfALine), label))# 打标签
+		
 
 def dataSpliter(sentences):
 	x, y = zip(*sentences)
 	trainData,testData,trainLabel,testLabel = train_test_split(x, y, test_size=0.3, random_state=0)
 	return trainData,testData,trainLabel,testLabel
 
-#加载停用词
-stopwords=pd.read_csv('stopWords.txt',index_col=False,quoting=3,sep="\t",names=['stopword'], encoding='utf-8')
-stopwords=stopwords['stopword'].values
-
+#加载语料和停用词
 commonSiteTitle = []
 adultSiteTitle = []
-#加载语料
+stopWords = []
+
 csvReader("oldData/commonSiteDescription.csv",commonSiteTitle)
 csvReader("oldData/adultSiteDescription.csv",adultSiteTitle)
+csvReader("oldData/stopWords.csv",stopWords)
 
 adultSiteWords = []
 getWordsAndMakeLabel(adultSiteTitle, adultSiteWords, 0)
@@ -83,6 +77,6 @@ print(classifier.score(vec.transform(testData), testLabel))
 
 count = 0
 while count < len(testLabel):
-	#if(predictResult[count] != testLabel[count]):
-		#print(predictResult[count],testLabel[count],testData[count])
+	if(predictResult[count] != testLabel[count]):
+		print(predictResult[count],testLabel[count],testData[count])
 	count = count + 1
