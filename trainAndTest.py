@@ -21,7 +21,7 @@ def getWordsAndMakeLabel(allLines, sentences, label):
 		wordsOfALine=jieba.lcut(lineLower)
 		wordsOfALine = [word for word in wordsOfALine if not str(word).isdigit()]#去数字
 		wordsOfALine = list(filter(lambda word:word.strip(), wordsOfALine))   #去左右空格
-		wordsOfALine = list(filter(lambda word:word not in stopwords, wordsOfALine)) #去掉停用词
+		wordsOfALine = list(filter(lambda word:word not in stopWords, wordsOfALine)) #去掉停用词
 		sentences.append((" ".join(wordsOfALine), label))# 打标签
 		
 
